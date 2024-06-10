@@ -1,4 +1,4 @@
-# VBA-challenge - VBA code found in "This Workbook" - below sheet 6 (F)
+# VBA-challenge - VBA code found in "This Workbook" in the excel challenge 2 doc - below sheet 6 (F)
 
 - needed assistance from stack overflow to help create a rule for searching between 1 quarter dates https://stackoverflow.com/questions/9311699/max-value-in-worksheet
  'Check if the date falls within the first quarter (January 1st to March 31st)
