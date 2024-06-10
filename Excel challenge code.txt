@@ -1,0 +1,141 @@
+Sub VBA_Challenge()
+
+    Dim ws As Worksheet
+    Dim i As Long
+    Dim Ticker As String
+    Dim next_row As Integer
+    Dim total_stock_volume As Double
+    Dim ticker_row As Long
+    Dim last_row As Long
+    
+    For Each ws In Worksheets
+        ws.Range("I1").Value = "Ticker"
+        ws.Range("J1").Value = "Quarterly Change"
+        ws.Range("K1").Value = "Percent Change"
+        ws.Range("L1").Value = "Total Stock Volume"
+        
+        next_row = 2
+        last_row = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+        
+        For i = 2 To last_row
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+                Ticker = ws.Cells(i, 1).Value
+                ws.Range("I" & next_row).Value = Ticker
+                
+                ' last row for current ticker symbol
+                ticker_row = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+                
+                ' total stock volume for the first q(January 1st to March 31st)
+                total_stock_volume = 0
+                For j = 2 To ticker_row
+                    ' Check if the date falls within the first quarter (January 1st to March 31st)
+                    If ws.Cells(j, 1).Value = Ticker And Month(ws.Cells(j, 2).Value) >= 1 And Month(ws.Cells(j, 2).Value) <= 3 Then
+                        total_stock_volume = total_stock_volume + ws.Cells(j, 7).Value
+                    End If
+                Next j
+                
+                ' Open price in January
+                Dim january_open_price As Double
+                For j = 2 To ticker_row
+                    If ws.Cells(j, 1).Value = Ticker And Month(ws.Cells(j, 2).Value) = 1 Then
+                        january_open_price = ws.Cells(j, 3).Value
+                        Exit For
+                    End If
+                Next j
+                
+                ' Close price in March
+                Dim march_close_price As Double
+                For j = ticker_row To 2 Step -1
+                    If ws.Cells(j, 1).Value = Ticker And Month(ws.Cells(j, 2).Value) = 3 Then
+                        march_close_price = ws.Cells(j, 6).Value
+                        Exit For
+                    End If
+                Next j
+                
+                ' Calculate the quarterly change
+                Dim quarterly_change As Double
+                quarterly_change = march_close_price - january_open_price
+                               
+                ' Calculate the percent change
+                Dim percent_change As Double
+                If january_open_price <> 0 Then
+                    percent_change = (quarterly_change / january_open_price) * 100
+                    percent_change = WorksheetFunction.Round(percent_change, 2)
+                Else
+                    percent_change = 0
+                End If
+
+                ' Print values
+                ws.Cells(next_row, 10).Value = quarterly_change
+                ws.Cells(next_row, 11).Value = percent_change
+                ws.Cells(next_row, 12).Value = total_stock_volume
+                
+                'summary stats
+                ws.Range("O2").Value = "Greatest % Increase"
+                ws.Range("O3").Value = "Greatest % Decrease"
+                ws.Range("O4").Value = "Greatest Total Volume"
+                ws.Range("P1").Value = "Ticker"
+                ws.Range("Q1").Value = "Value"
+                
+                
+                Dim Tag As String
+                Dim Tag2 As String
+                Dim Tag3 As String
+                Dim max As Double
+                Dim min As Double
+                Dim Greatest_vol As Double
+                Dim max_volume_row As Long
+                         
+                
+                
+                max = -99999999
+                min = 99999999
+                
+               For a = 2 To last_row
+                    If ws.Cells(a, 11).Value > max Then
+                        max = ws.Cells(a, 11).Value
+                        Tag = ws.Cells(a, 9).Value
+                    End If
+                Next a
+                           
+                For b = 2 To last_row
+                    If ws.Cells(b, 11).Value < min Then
+                        min = ws.Cells(b, 11).Value
+                        Tag2 = ws.Cells(b, 9).Value
+                    End If
+                Next b
+                
+                ' Greatest_vol calculation
+                Greatest_vol = WorksheetFunction.max(ws.Range("L2:L" & last_row))
+
+                ' Corresponding ticker symbol
+                max_volume_row = WorksheetFunction.Match(Greatest_vol, ws.Range("L2:L" & last_row), 0)
+                Tag3 = ws.Cells(max_volume_row + 1, 9).Value
+                
+                ' Print values
+                ws.Cells(2, 17).Value = max
+                ws.Cells(2, 16).Value = Tag
+                ws.Cells(3, 17).Value = min
+                ws.Cells(3, 16).Value = Tag2
+                ws.Cells(4, 17).Value = Greatest_vol
+                ws.Cells(4, 16).Value = Tag3
+                
+                
+                'color code Q_change
+                For d = 2 To last_row
+                    If ws.Cells(d, 10).Value > 0 Then
+                        ws.Cells(d, 10).Interior.ColorIndex = 4
+                    ElseIf ws.Cells(d, 10).Value < 0 Then
+                        ws.Cells(d, 10).Interior.ColorIndex = 3
+                    End If
+                Next d
+                
+                ' Move to the next row
+                next_row = next_row + 1
+            End If
+        Next i
+    Next ws
+End Sub
+             
+                
+             
